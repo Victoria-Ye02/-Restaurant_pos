@@ -1,0 +1,305 @@
+package ui;
+
+import dao.UserDAO;
+import model.UserModel;
+import javax.swing.*;
+import javax.swing.table.*;
+import java.awt.*;
+import java.util.List;
+
+public class UserManagementPanel extends JPanel {
+
+    private JTable            table;
+    private DefaultTableModel tableModel;
+    private JTextField        usernameField;
+    private JPasswordField    passwordField;
+    private JComboBox<String> roleBox;
+    private JComboBox<String> statusBox;
+    private JButton           saveBtn;
+    private int               editingId = -1;
+
+    public UserManagementPanel() {
+        setLayout(new BorderLayout());
+        setBackground(new Color(245, 245, 250));
+        buildUI();
+    }
+
+    private void buildUI() {
+        // Left — user list
+        JPanel leftPanel = new JPanel(new BorderLayout());
+        leftPanel.setBackground(Color.WHITE);
+        leftPanel.setBorder(BorderFactory.createMatteBorder(
+            0, 0, 0, 1, Color.LIGHT_GRAY));
+        leftPanel.setPreferredSize(new Dimension(520, 0));
+
+        JPanel listHeader = new JPanel(new BorderLayout());
+        listHeader.setBackground(new Color(26, 26, 46));
+        listHeader.setPreferredSize(new Dimension(0, 45));
+
+        JLabel listTitle = new JLabel("  Users");
+        listTitle.setForeground(Color.WHITE);
+        listTitle.setFont(
+            new Font("SansSerif", Font.BOLD, 13));
+        listHeader.add(listTitle, BorderLayout.WEST);
+        leftPanel.add(listHeader, BorderLayout.NORTH);
+
+        // Table
+        String[] cols = {"ID","Username","Role","Status"};
+        tableModel = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+        table = new JTable(tableModel);
+        table.setRowHeight(36);
+        table.setFont(
+            new Font("SansSerif", Font.PLAIN, 13));
+        table.getTableHeader().setFont(
+            new Font("SansSerif", Font.BOLD, 12));
+        table.setSelectionMode(
+            ListSelectionModel.SINGLE_SELECTION);
+
+        table.getColumnModel().getColumn(0)
+            .setPreferredWidth(40);
+        table.getColumnModel().getColumn(1)
+            .setPreferredWidth(200);
+        table.getColumnModel().getColumn(2)
+            .setPreferredWidth(100);
+        table.getColumnModel().getColumn(3)
+            .setPreferredWidth(80);
+
+        table.getSelectionModel()
+            .addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = table.getSelectedRow();
+                if (row >= 0) loadRowToForm(row);
+            }
+        });
+
+        leftPanel.add(new JScrollPane(table),
+            BorderLayout.CENTER);
+
+        // Action buttons
+        JPanel actionPanel = new JPanel(
+            new FlowLayout(FlowLayout.LEFT, 8, 8));
+        actionPanel.setBackground(Color.WHITE);
+
+        JButton deleteBtn = new JButton("Delete");
+        deleteBtn.setBackground(new Color(163, 45, 45));
+        deleteBtn.setForeground(Color.WHITE);
+        deleteBtn.setOpaque(true);
+        deleteBtn.setBorderPainted(false);
+        deleteBtn.setFocusPainted(false);
+        deleteBtn.setFont(
+            new Font("SansSerif", Font.BOLD, 12));
+        deleteBtn.addActionListener(
+            e -> deleteSelected());
+
+        JButton clearBtn = new JButton("Clear form");
+        clearBtn.setOpaque(true);
+        clearBtn.setBorderPainted(false);
+        clearBtn.setFocusPainted(false);
+        clearBtn.setFont(
+            new Font("SansSerif", Font.PLAIN, 12));
+        clearBtn.addActionListener(e -> clearForm());
+
+        actionPanel.add(deleteBtn);
+        actionPanel.add(clearBtn);
+        leftPanel.add(actionPanel, BorderLayout.SOUTH);
+
+        // Right — Form
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(
+            new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+        rightPanel.setBackground(new Color(245,245,250));
+        rightPanel.setBorder(
+            BorderFactory.createEmptyBorder(
+                20, 20, 20, 20));
+
+        JLabel formTitle = new JLabel("Add / Edit User");
+        formTitle.setFont(
+            new Font("SansSerif", Font.BOLD, 14));
+        formTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Username
+        usernameField = new JTextField();
+        usernameField.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE, 36));
+        usernameField.setFont(
+            new Font("SansSerif", Font.PLAIN, 13));
+
+        // Password
+        passwordField = new JPasswordField();
+        passwordField.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE, 36));
+        passwordField.setFont(
+            new Font("SansSerif", Font.PLAIN, 13));
+
+        // Role
+        roleBox = new JComboBox<>(
+            new String[]{"cashier","admin"});
+        roleBox.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE, 36));
+        roleBox.setFont(
+            new Font("SansSerif", Font.PLAIN, 13));
+
+        // Status
+        statusBox = new JComboBox<>(
+            new String[]{"active","inactive"});
+        statusBox.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE, 36));
+        statusBox.setFont(
+            new Font("SansSerif", Font.PLAIN, 13));
+
+        // Save button
+        saveBtn = new JButton("Save");
+        saveBtn.setBackground(new Color(83, 74, 183));
+        saveBtn.setForeground(Color.WHITE);
+        saveBtn.setOpaque(true);
+        saveBtn.setBorderPainted(false);
+        saveBtn.setFocusPainted(false);
+        saveBtn.setFont(
+            new Font("SansSerif", Font.BOLD, 13));
+        saveBtn.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE, 40));
+        saveBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        saveBtn.addActionListener(e -> saveUser());
+
+        rightPanel.add(formTitle);
+        rightPanel.add(Box.createVerticalStrut(16));
+        rightPanel.add(makeLabel("Username"));
+        rightPanel.add(Box.createVerticalStrut(4));
+        rightPanel.add(usernameField);
+        rightPanel.add(Box.createVerticalStrut(12));
+        rightPanel.add(makeLabel("Password"));
+        rightPanel.add(Box.createVerticalStrut(4));
+        rightPanel.add(passwordField);
+        rightPanel.add(Box.createVerticalStrut(12));
+        rightPanel.add(makeLabel("Role"));
+        rightPanel.add(Box.createVerticalStrut(4));
+        rightPanel.add(roleBox);
+        rightPanel.add(Box.createVerticalStrut(12));
+        rightPanel.add(makeLabel("Status"));
+        rightPanel.add(Box.createVerticalStrut(4));
+        rightPanel.add(statusBox);
+        rightPanel.add(Box.createVerticalStrut(16));
+        rightPanel.add(saveBtn);
+
+        add(leftPanel,  BorderLayout.CENTER);
+        add(rightPanel, BorderLayout.EAST);
+
+        loadUserList();
+    }
+
+    private JLabel makeLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        lbl.setForeground(Color.GRAY);
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return lbl;
+    }
+
+    public void loadUserList() {
+        tableModel.setRowCount(0);
+        UserDAO dao = new UserDAO();
+        List<UserModel> list = dao.getAllUsers();
+        for (UserModel u : list) {
+            tableModel.addRow(new Object[]{
+                u.getId(),
+                u.getUsername(),
+                u.getRole(),
+                u.getStatus()
+            });
+        }
+    }
+
+    private void loadRowToForm(int row) {
+        editingId = (int) tableModel.getValueAt(row, 0);
+        usernameField.setText(
+            (String) tableModel.getValueAt(row, 1));
+        passwordField.setText(""); // မပြဘဲ ထား
+        roleBox.setSelectedItem(
+            tableModel.getValueAt(row, 2));
+        statusBox.setSelectedItem(
+            tableModel.getValueAt(row, 3));
+        saveBtn.setText("Update");
+    }
+
+    private void saveUser() {
+        String username = usernameField.getText().trim();
+        String password = new String(
+            passwordField.getPassword()).trim();
+        String role     = (String) roleBox
+            .getSelectedItem();
+        String status   = (String) statusBox
+            .getSelectedItem();
+
+        if (username.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "Username ထည့်ပါ", "Warning",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        UserDAO dao = new UserDAO();
+        if (editingId == -1) {
+            // Add new
+            if (password.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Password ထည့်ပါ", "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            dao.addUser(username, password, role);
+        } else {
+            // Update
+            dao.updateUser(editingId, username,
+                password, role, status);
+        }
+
+        clearForm();
+        loadUserList();
+    }
+
+    private void deleteSelected() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this,
+                "User တစ်ယောက် ရွေးပါ", "Warning",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String role = (String) tableModel
+            .getValueAt(row, 2);
+        if ("admin".equals(role)) {
+            JOptionPane.showMessageDialog(this,
+                "Admin account မဖျက်ရဘူး!", "Error",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int id = (int) tableModel.getValueAt(row, 0);
+        int confirm = JOptionPane.showConfirmDialog(
+            this, "ဖျက်မှာ သေချာပြီလား?",
+            "Confirm", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            dao().deleteUser(id);
+            clearForm();
+            loadUserList();
+        }
+    }
+
+    private UserDAO dao() { return new UserDAO(); }
+
+    private void clearForm() {
+        editingId = -1;
+        usernameField.setText("");
+        passwordField.setText("");
+        roleBox.setSelectedIndex(0);
+        statusBox.setSelectedIndex(0);
+        saveBtn.setText("Save");
+        table.clearSelection();
+    }
+}

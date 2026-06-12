@@ -1,0 +1,192 @@
+package ui;
+
+import dao.OrderDAO;
+import javax.swing.*;
+import javax.swing.table.*;
+import java.awt.*;
+import java.util.List;
+
+public class SalesReportPanel extends JPanel {
+
+    private JLabel totalSalesLabel;
+    private JLabel totalOrdersLabel;
+    private JLabel totalTaxLabel;
+    private DefaultTableModel tableModel;
+    private JComboBox<String> filterBox;
+
+    public SalesReportPanel() {
+        setLayout(new BorderLayout(0, 0));
+        setBackground(new Color(245, 245, 250));
+        buildUI();
+    }
+
+    private void buildUI() {
+        // Top bar
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(new Color(26, 26, 46));
+        topBar.setPreferredSize(new Dimension(0, 45));
+
+        JLabel title = new JLabel("  Sales Report");
+        title.setForeground(Color.WHITE);
+        title.setFont(new Font("SansSerif", Font.BOLD, 13));
+        topBar.add(title, BorderLayout.WEST);
+
+        // Filter + Load button
+        JPanel filterPanel = new JPanel(
+            new FlowLayout(FlowLayout.RIGHT, 8, 8));
+        filterPanel.setOpaque(false);
+
+        filterBox = new JComboBox<>(new String[]{
+            "Today", "This Week", "This Month", "All"});
+        filterBox.setFont(
+            new Font("SansSerif", Font.PLAIN, 12));
+        filterBox.setPreferredSize(new Dimension(120, 28));
+
+        JButton loadBtn = new JButton("Load");
+        loadBtn.setBackground(new Color(83, 74, 183));
+        loadBtn.setForeground(Color.WHITE);
+        loadBtn.setOpaque(true);
+        loadBtn.setBorderPainted(false);
+        loadBtn.setFocusPainted(false);
+        loadBtn.setFont(
+            new Font("SansSerif", Font.BOLD, 12));
+        loadBtn.addActionListener(e -> loadReport());
+
+        filterPanel.add(filterBox);
+        filterPanel.add(loadBtn);
+        topBar.add(filterPanel, BorderLayout.EAST);
+        add(topBar, BorderLayout.NORTH);
+
+        // Body
+        JPanel body = new JPanel(new BorderLayout(0, 12));
+        body.setBackground(new Color(245, 245, 250));
+        body.setBorder(
+            BorderFactory.createEmptyBorder(12, 12, 12, 12));
+
+        // Stat cards
+        JPanel statPanel = new JPanel(new GridLayout(1, 3, 12, 0));
+        statPanel.setOpaque(false);
+
+        totalSalesLabel  = new JLabel("$0.00");
+        totalOrdersLabel = new JLabel("0");
+        totalTaxLabel    = new JLabel("$0.00");
+
+        statPanel.add(makeStatCard(
+            "Total Sales", totalSalesLabel, 
+            new Color(83, 74, 183)));
+        statPanel.add(makeStatCard(
+            "Orders", totalOrdersLabel,
+            new Color(15, 110, 86)));
+        statPanel.add(makeStatCard(
+            "Tax Collected", totalTaxLabel,
+            new Color(211, 84, 0)));
+
+        body.add(statPanel, BorderLayout.NORTH);
+
+        // Order history table
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setBackground(Color.WHITE);
+        tablePanel.setBorder(
+            BorderFactory.createLineBorder(
+                Color.LIGHT_GRAY, 1));
+
+        JLabel tableTitle = new JLabel(
+            "  Order History");
+        tableTitle.setFont(
+            new Font("SansSerif", Font.BOLD, 13));
+        tableTitle.setOpaque(true);
+        tableTitle.setBackground(new Color(245, 245, 250));
+        tableTitle.setPreferredSize(new Dimension(0, 36));
+        tablePanel.add(tableTitle, BorderLayout.NORTH);
+
+        String[] cols = {
+            "Order ID", "Table", "Date/Time", 
+            "Items", "Subtotal", "Tax", "Total"};
+        tableModel = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+
+        JTable table = new JTable(tableModel);
+        table.setRowHeight(34);
+        table.setFont(
+            new Font("SansSerif", Font.PLAIN, 12));
+        table.getTableHeader().setFont(
+            new Font("SansSerif", Font.BOLD, 11));
+
+        // Column width
+        table.getColumnModel().getColumn(0)
+            .setPreferredWidth(70);
+        table.getColumnModel().getColumn(1)
+            .setPreferredWidth(60);
+        table.getColumnModel().getColumn(2)
+            .setPreferredWidth(150);
+        table.getColumnModel().getColumn(3)
+            .setPreferredWidth(50);
+        table.getColumnModel().getColumn(4)
+            .setPreferredWidth(80);
+        table.getColumnModel().getColumn(5)
+            .setPreferredWidth(60);
+        table.getColumnModel().getColumn(6)
+            .setPreferredWidth(80);
+
+        tablePanel.add(new JScrollPane(table),
+            BorderLayout.CENTER);
+        body.add(tablePanel, BorderLayout.CENTER);
+        add(body, BorderLayout.CENTER);
+
+        loadReport();
+    }
+
+    private JPanel makeStatCard(String label,
+            JLabel valueLabel, Color color) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(
+                Color.LIGHT_GRAY, 1),
+            BorderFactory.createEmptyBorder(
+                12, 16, 12, 16)));
+
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        lbl.setForeground(Color.GRAY);
+
+        valueLabel.setFont(
+            new Font("SansSerif", Font.BOLD, 22));
+        valueLabel.setForeground(color);
+
+        card.add(lbl,        BorderLayout.NORTH);
+        card.add(valueLabel, BorderLayout.CENTER);
+        return card;
+    }
+
+    public void loadReport() {
+        tableModel.setRowCount(0);
+
+        String filter = (String) filterBox
+            .getSelectedItem();
+
+        OrderDAO dao = new OrderDAO();
+        List<Object[]> rows = dao.getSalesReport(filter);
+
+        double totalSales  = 0;
+        double totalTax    = 0;
+        int    totalOrders = 0;
+
+        for (Object[] row : rows) {
+            tableModel.addRow(row);
+            totalSales  += (double) row[4]; // subtotal
+            totalTax    += (double) row[5]; // tax
+            totalOrders++;
+        }
+
+        totalSalesLabel.setText(
+            String.format(" ₩ %,.0f", totalSales + totalTax));
+        totalOrdersLabel.setText(
+            String.valueOf(totalOrders));
+        totalTaxLabel.setText(
+            String.format(" ₩ %,.0f", totalTax));
+    }
+}

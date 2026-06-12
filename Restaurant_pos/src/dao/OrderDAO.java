@@ -1,0 +1,226 @@
+package dao;
+
+
+import db.DBConnection;
+import table.MenuModel;
+import ui.OrderItem;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class OrderDAO {
+
+    // Order save + table status ပြောင်း
+    public boolean submitOrder(int tableId, 
+                                List<OrderItem> items) {
+        Connection conn = DBConnection.connect();
+        try {
+            conn.setAutoCommit(false); // transaction စမယ်
+
+            // 1) orders table မှာ insert
+            String orderSql = 
+                "INSERT INTO orders (table_id, status) " +
+                "VALUES (?, 'open')";
+            PreparedStatement orderPs = 
+                conn.prepareStatement(orderSql, 
+                    Statement.RETURN_GENERATED_KEYS);
+            orderPs.setInt(1, tableId);
+            orderPs.executeUpdate();
+
+            // order_id ယူမယ်
+            ResultSet rs = orderPs.getGeneratedKeys();
+            int orderId = 0;
+            if (rs.next()) orderId = rs.getInt(1);
+
+            // 2) order_items မှာ insert
+            String itemSql = 
+                "INSERT INTO order_items " +
+                "(order_id, menu_id, qty, price) " +
+                "VALUES (?, ?, ?, ?)";
+            PreparedStatement itemPs = 
+                conn.prepareStatement(itemSql);
+
+            for (OrderItem oi : items) {
+                itemPs.setInt(1, orderId);
+                itemPs.setInt(2, oi.getMenu().getId());
+                itemPs.setInt(3, oi.getQty());
+                itemPs.setDouble(4, oi.getMenu().getPrice());
+                itemPs.addBatch();
+            }
+            itemPs.executeBatch();
+
+            // 3) table status → ordering
+            String tableSql = 
+                "UPDATE tables SET status = 'ordering' " +
+                "WHERE id = ?";
+            PreparedStatement tablePs = 
+                conn.prepareStatement(tableSql);
+            tablePs.setInt(1, tableId);
+            tablePs.executeUpdate();
+
+            conn.commit(); // အားလုံး OK ဆိုရင် save
+            return true;
+
+        } catch (SQLException e) {
+            try { conn.rollback(); } // error ဆိုရင် ပြန်ဖျက်
+            catch (SQLException ex) { ex.printStackTrace(); }
+            e.printStackTrace();
+            return false;
+        } finally {
+            DBConnection.close();
+        }
+    }
+ // table ရဲ့ open order ယူမယ်
+    public int getOpenOrderId(int tableId) {
+        String sql = "SELECT id FROM orders " +
+                     "WHERE table_id = ? AND status = 'open' " +
+                     "ORDER BY id DESC LIMIT 1";
+        Connection conn = DBConnection.connect();
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, tableId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt("id");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close();
+        }
+        return -1;
+    }
+
+    // order ထဲက items ယူမယ်
+    public List<OrderItem> getOrderItems(int orderId) {
+        List<OrderItem> list = new ArrayList<>();
+        String sql = "SELECT m.id, m.name, m.price, m.category, " +
+                     "oi.qty FROM order_items oi " +
+                     "JOIN menu_items m ON oi.menu_id = m.id " +
+                     "WHERE oi.order_id = ?";
+        Connection conn = DBConnection.connect();
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                MenuModel m = new MenuModel(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getDouble("price"),
+                    rs.getString("category")
+                );
+                OrderItem oi = new OrderItem(m);
+                // qty set လုပ်ဖို့ OrderItem မှာ setQty ထည့်ရမယ်
+                for (int i = 1; i < rs.getInt("qty"); i++) {
+                    oi.addQty();
+                }
+                list.add(oi);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close();
+        }
+        return list;
+    }
+
+    // total တွက်
+    public double getOrderTotal(int orderId) {
+        String sql = "SELECT SUM(oi.qty * oi.price) as total " +
+                     "FROM order_items oi WHERE oi.order_id = ?";
+        Connection conn = DBConnection.connect();
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getDouble("total");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close();
+        }
+        return 0;
+    }
+
+    // payment လုပ်မယ် — status paid + table available
+    public boolean payOrder(int orderId, int tableId) {
+        Connection conn = DBConnection.connect();
+        try {
+            conn.setAutoCommit(false);
+
+            String paySQL = "UPDATE orders SET status='paid' " +
+                            "WHERE id=?";
+            PreparedStatement ps1 = conn.prepareStatement(paySQL);
+            ps1.setInt(1, orderId);
+            ps1.executeUpdate();
+
+            String tblSQL = "UPDATE tables SET status='available' " +
+                            "WHERE id=?";
+            PreparedStatement ps2 = conn.prepareStatement(tblSQL);
+            ps2.setInt(1, tableId);
+            ps2.executeUpdate();
+
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            try { conn.rollback(); }
+            catch (SQLException ex) { ex.printStackTrace(); }
+            e.printStackTrace();
+            return false;
+        } finally {
+            DBConnection.close();
+        }
+    }
+    public List<Object[]> getSalesReport(String filter) {
+        List<Object[]> list = new ArrayList<>();
+
+        // Filter အရ date condition ပြောင်း
+        String dateCondition = switch (filter) {
+            case "Today" ->
+                "DATE(o.order_date) = CURDATE()";
+            case "This Week" ->
+                "YEARWEEK(o.order_date) = YEARWEEK(NOW())";
+            case "This Month" ->
+                "MONTH(o.order_date) = MONTH(NOW()) " +
+                "AND YEAR(o.order_date) = YEAR(NOW())";
+            default -> "1=1"; // All
+        };
+
+        String sql =
+            "SELECT o.id, t.table_num, o.order_date, " +
+            "COUNT(oi.id) as item_count, " +
+            "SUM(oi.qty * oi.price) as subtotal " +
+            "FROM orders o " +
+            "JOIN tables t ON o.table_id = t.id " +
+            "JOIN order_items oi ON o.id = oi.order_id " +
+            "WHERE o.status = 'paid' " +
+            "AND " + dateCondition +
+            " GROUP BY o.id, t.table_num, o.order_date " +
+            "ORDER BY o.order_date DESC";
+
+        Connection conn = DBConnection.connect();
+        try {
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                double subtotal = rs.getDouble("subtotal");
+                double tax      = subtotal * 0.07;
+                double total    = subtotal + tax;
+
+                list.add(new Object[]{
+                    rs.getInt("id"),
+                    "T" + rs.getInt("table_num"),
+                    rs.getString("order_date"),
+                    rs.getInt("item_count"),
+                    subtotal,
+                    tax,
+                    total
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close();
+        }
+        return list;
+    }
+}

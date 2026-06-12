@@ -1,0 +1,5 @@
+INDEX VERSION 1.134+/Users/nawvictoriayethan/eclipse-workspace/Restaurant_pos/.metadata/.plugins/org.eclipse.jdt.core
+1791142269.index
+1459084011.index
+328973395.index
+1865797976.index

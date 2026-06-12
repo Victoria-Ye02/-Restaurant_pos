@@ -1,0 +1,30 @@
+package dao;
+
+import db.DBConnection;
+
+import table.UserModel;
+import java.sql.*;
+
+public class UserDAO {
+
+	public UserModel login(String username, String password) {
+		String sql = "SELECT * FROM users " + "WHERE username = ? " + "AND password = ? " + "AND status = 'active'";
+
+		Connection conn = DBConnection.connect();
+		try {
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setString(1, username);
+			ps.setString(2, password);
+
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				return new UserModel(rs.getInt("id"), rs.getString("username"), rs.getString("role"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DBConnection.close();
+		}
+		return null; // login fail
+	}
+}

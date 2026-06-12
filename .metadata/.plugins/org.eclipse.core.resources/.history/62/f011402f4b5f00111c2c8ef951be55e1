@@ -1,0 +1,148 @@
+package ui;
+
+import dao.MenuDAO;
+import table.MenuModel;
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+
+public class MenuGridPanel extends JPanel {
+
+    private JPanel           menuGrid;
+    private List<MenuModel>  allMenus;
+    private List<OrderItem>  orderItems;
+    private OrderSummaryPanel summaryPanel;
+
+    public MenuGridPanel(List<OrderItem> orderItems,
+                         OrderSummaryPanel summaryPanel) {
+        this.orderItems   = orderItems;
+        this.summaryPanel = summaryPanel;
+        setLayout(new BorderLayout());
+        setBackground(new Color(245, 245, 250));
+
+        // Load menus from DB
+        MenuDAO dao = new MenuDAO();
+        allMenus    = dao.getAllMenus();
+
+        buildCategoryTabs();
+        buildMenuGrid("All");
+        
+        SwingUtilities.invokeLater(() -> summaryPanel.refresh());
+    }
+
+    private void buildCategoryTabs() {
+        JPanel tabPanel = new JPanel(
+            new FlowLayout(FlowLayout.LEFT, 8, 8));
+        tabPanel.setBackground(new Color(26, 26, 46));
+
+        String[] cats = {"All", "Food", "Drinks", "Dessert"};
+        
+        for (String cat : cats) {
+            JButton btn = new JButton(cat);
+            btn.setForeground(Color.WHITE);
+            btn.setBackground(new Color(44, 44, 66));
+            btn.setOpaque(true);              // ← ထည့်
+            btn.setBorderPainted(false);
+            btn.setFocusPainted(false);
+            btn.setFont(new Font("SansSerif", Font.BOLD, 12));
+            btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            btn.setPreferredSize(new Dimension(100, 32)); // ← ထည့်
+            
+            btn.addActionListener(e -> {
+                // tab highlight ပြောင်း
+                for (Component c : tabPanel.getComponents()) {
+                    if (c instanceof JButton) {
+                        c.setBackground(new Color(44, 44, 66));
+                    }
+                }
+                btn.setBackground(new Color(83, 74, 183)); // active
+
+                // menu ပြောင်း
+                buildMenuGrid(cat);
+            });
+            
+            tabPanel.add(btn);
+        }
+        
+        add(tabPanel, BorderLayout.NORTH);
+    }
+
+    private JScrollPane scrollPane; // ← field အနေနဲ့ ထည့်
+
+    private void buildMenuGrid(String category) {
+        // ရှိပြီးသား scroll ဖျက်
+        if (scrollPane != null) {
+            remove(scrollPane);
+        }
+
+        menuGrid = new JPanel(new GridLayout(0, 4, 8, 8));
+        menuGrid.setBackground(new Color(245, 245, 250));
+        menuGrid.setBorder(
+            BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        for (MenuModel m : allMenus) {
+            if (!category.equals("All") &&
+                !m.getCategory().equals(category)) continue;
+
+            JButton card = new JButton();
+            card.setLayout(new BorderLayout());
+            card.setBackground(Color.WHITE);
+            card.setOpaque(true);             // ← ထည့်
+            card.setBorder(BorderFactory.createLineBorder(
+                Color.LIGHT_GRAY, 1));
+            card.setFocusPainted(false);
+            card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            card.setPreferredSize(new Dimension(140, 70));
+
+            JLabel nameLabel = new JLabel(
+                m.getName(), SwingConstants.CENTER);
+            nameLabel.setFont(
+                new Font("SansSerif", Font.BOLD, 13));
+
+            JLabel priceLabel = new JLabel(
+                String.format("$%.2f", m.getPrice()),
+                SwingConstants.CENTER);
+            priceLabel.setFont(
+                new Font("SansSerif", Font.PLAIN, 12));
+            priceLabel.setForeground(new Color(15, 110, 86));
+
+            card.add(nameLabel, BorderLayout.CENTER);
+            card.add(priceLabel, BorderLayout.SOUTH);
+
+            card.addActionListener(e -> {
+                boolean found = false;
+                for (OrderItem oi : orderItems) {
+                    if (oi.getMenu().getId() == m.getId()) {
+                        oi.addQty();
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) orderItems.add(new OrderItem(m));
+                summaryPanel.refresh();
+
+                // Click highlight
+                card.setBackground(new Color(230, 245, 235));
+                card.setBorder(BorderFactory.createLineBorder(
+                    new Color(46, 125, 50), 2));
+                Timer timer = new Timer(500, ev -> {
+                    card.setBackground(Color.WHITE);
+                    card.setBorder(
+                        BorderFactory.createLineBorder(
+                            Color.LIGHT_GRAY, 1));
+                });
+                timer.setRepeats(false);
+                timer.start();
+            });
+
+            menuGrid.add(card);
+        }
+
+        scrollPane = new JScrollPane(menuGrid);
+        scrollPane.setBorder(null);
+        add(scrollPane, BorderLayout.CENTER);
+
+        revalidate();
+        repaint();
+    }
+}

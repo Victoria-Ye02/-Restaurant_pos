@@ -1,0 +1,22 @@
+package table;
+
+public class UserModel {
+    private int    id;
+    private String username;
+    private String role;
+    private String status;  // ← ဒါပါရဲ့လား
+
+    // parameter ၄ ခု ရှိရမယ်
+    public UserModel(int id, String username,
+                      String role, String status) {
+        this.id       = id;
+        this.username = username;
+        this.role     = role;
+        this.status   = status;
+    }
+
+    public int    getId()       { return id; }
+    public String getUsername() { return username; }
+    public String getRole()     { return role; }
+    public String getStatus()   { return status; } // ← ဒါပါရဲ့လား
+}

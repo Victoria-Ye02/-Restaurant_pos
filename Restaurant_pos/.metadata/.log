@@ -1,0 +1,26 @@
+!SESSION 2026-05-28 14:34:52.682 -----------------------------------------------
+eclipse.buildId=4.38.0.20251204-0849
+java.version=21.0.10
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_KR
+Framework arguments:  -product org.eclipse.epp.package.java.product -keyring /Users/nawvictoriayethan/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -product org.eclipse.epp.package.java.product -keyring /Users/nawvictoriayethan/.eclipse_keyring -data /Users/nawvictoriayethan/eclipse-workspace/Restaurant_pos/Restaurant_pos
+
+!ENTRY ch.qos.logback.classic 1 0 2026-05-28 14:34:55.117
+!MESSAGE Activated before the state location was initialized. Retry after the state location is initialized.
+
+!ENTRY ch.qos.logback.classic 1 0 2026-05-28 14:34:56.621
+!MESSAGE Logback config file: /Users/nawvictoriayethan/eclipse-workspace/Restaurant_pos/Restaurant_pos/.metadata/.plugins/org.eclipse.m2e.logback/logback.2.7.101.20251017-1242.xml
+!SESSION 2026-05-28 14:35:21.066 -----------------------------------------------
+eclipse.buildId=4.38.0.20251204-0849
+java.version=21.0.10
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_KR
+Framework arguments:  -product org.eclipse.epp.package.java.product -keyring /Users/nawvictoriayethan/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -product org.eclipse.epp.package.java.product -keyring /Users/nawvictoriayethan/.eclipse_keyring
+
+!ENTRY ch.qos.logback.classic 1 0 2026-05-28 14:35:23.446
+!MESSAGE Activated before the state location was initialized. Retry after the state location is initialized.
+
+!ENTRY ch.qos.logback.classic 1 0 2026-05-28 14:35:24.932
+!MESSAGE Logback config file: /Users/nawvictoriayethan/eclipse-workspace/Restaurant_pos/Restaurant_pos/.metadata/.plugins/org.eclipse.m2e.logback/logback.2.7.101.20251017-1242.xml

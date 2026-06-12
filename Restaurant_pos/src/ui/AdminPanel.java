@@ -1,0 +1,59 @@
+package ui;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class AdminPanel extends JPanel {
+
+    public AdminPanel() {
+        setLayout(new BorderLayout());
+        setBackground(new Color(245, 245, 250));
+        buildUI();
+    }
+
+    private void buildUI() {
+        // Top bar
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(new Color(26, 26, 46));
+        topBar.setPreferredSize(new Dimension(0, 55));
+
+        JLabel title = new JLabel("  Admin Panel");
+        title.setForeground(Color.WHITE);
+        title.setFont(new Font("SansSerif", Font.BOLD, 16));
+        topBar.add(title, BorderLayout.WEST);
+
+        // Logout button
+        JButton logoutBtn = new JButton("Logout");
+        logoutBtn.setBackground(new Color(163, 45, 45));
+        logoutBtn.setForeground(Color.WHITE);
+        logoutBtn.setOpaque(true);
+        logoutBtn.setBorderPainted(false);
+        logoutBtn.setFocusPainted(false);
+        logoutBtn.setFont(
+            new Font("SansSerif", Font.BOLD, 12));
+        logoutBtn.addActionListener(e -> {
+            Session.logout();
+            MainFrame.showPanel("LOGIN");
+        });
+
+        JPanel logoutWrap = new JPanel(
+            new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        logoutWrap.setOpaque(false);
+        logoutWrap.add(logoutBtn);
+        topBar.add(logoutWrap, BorderLayout.EAST);
+
+        add(topBar, BorderLayout.NORTH);
+
+        // Body — tab panel
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        tabs.addTab("Menu Management",
+        	    new MenuManagementPanel());
+        	tabs.addTab("User Management",
+        	    new UserManagementPanel()); // ← ပြင်
+        	tabs.addTab("Sales Report",
+        		     new SalesReportPanel()); 
+
+        add(tabs, BorderLayout.CENTER);
+    }
+}

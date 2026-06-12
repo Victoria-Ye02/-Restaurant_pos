@@ -1,0 +1,152 @@
+package ui;
+
+import dao.UserDAO;
+import table.UserModel;
+import javax.swing.*;
+import java.awt.*;
+
+public class LoginPanel extends JPanel {
+
+    private JTextField     usernameField;
+    private JPasswordField passwordField;
+    private JLabel         errorLabel;
+
+    public LoginPanel() {
+        setLayout(new GridBagLayout());
+        setBackground(new Color(26, 26, 46));
+        buildUI();
+    }
+
+    private void buildUI() {
+        JPanel card = new JPanel(new BorderLayout(0, 12));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createEmptyBorder(
+            28, 28, 28, 28));
+        card.setPreferredSize(new Dimension(320, 380));
+
+        // Logo area
+        JPanel logoPanel = new JPanel();
+        logoPanel.setOpaque(false);
+        logoPanel.setLayout(new BoxLayout(
+            logoPanel, BoxLayout.Y_AXIS));
+
+        JLabel icon = new JLabel("🍽", SwingConstants.CENTER);
+        icon.setFont(new Font("SansSerif", Font.PLAIN, 36));
+        icon.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel title = new JLabel(
+            "Mango Restaurant", SwingConstants.CENTER);
+        title.setFont(
+            new Font("SansSerif", Font.BOLD, 16));
+        title.setForeground(new Color(26, 26, 46));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel sub = new JLabel(
+            "Point of Sale System", SwingConstants.CENTER);
+        sub.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        sub.setForeground(Color.GRAY);
+        sub.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        logoPanel.add(icon);
+        logoPanel.add(Box.createVerticalStrut(6));
+        logoPanel.add(title);
+        logoPanel.add(Box.createVerticalStrut(3));
+        logoPanel.add(sub);
+
+        card.add(logoPanel, BorderLayout.NORTH);
+
+        // Form
+        JPanel form = new JPanel(new GridLayout(
+            5, 1, 0, 8));
+        form.setOpaque(false);
+
+        // Username
+        JLabel uLabel = new JLabel("Username");
+        uLabel.setFont(
+            new Font("SansSerif", Font.PLAIN, 12));
+        uLabel.setForeground(Color.GRAY);
+
+        usernameField = new JTextField();
+        usernameField.setFont(
+            new Font("SansSerif", Font.PLAIN, 13));
+        usernameField.setPreferredSize(
+            new Dimension(0, 36));
+
+        // Password
+        JLabel pLabel = new JLabel("Password");
+        pLabel.setFont(
+            new Font("SansSerif", Font.PLAIN, 12));
+        pLabel.setForeground(Color.GRAY);
+
+        passwordField = new JPasswordField();
+        passwordField.setFont(
+            new Font("SansSerif", Font.PLAIN, 13));
+
+        // Error label
+        errorLabel = new JLabel("");
+        errorLabel.setFont(
+            new Font("SansSerif", Font.PLAIN, 11));
+        errorLabel.setForeground(new Color(163, 45, 45));
+        errorLabel.setHorizontalAlignment(
+            SwingConstants.CENTER);
+
+        form.add(uLabel);
+        form.add(usernameField);
+        form.add(pLabel);
+        form.add(passwordField);
+        form.add(errorLabel);
+
+        card.add(form, BorderLayout.CENTER);
+
+        // Login button
+        JButton loginBtn = new JButton("Sign in");
+        loginBtn.setBackground(new Color(83, 74, 183));
+        loginBtn.setForeground(Color.WHITE);
+        loginBtn.setOpaque(true);
+        loginBtn.setBorderPainted(false);
+        loginBtn.setFocusPainted(false);
+        loginBtn.setFont(
+            new Font("SansSerif", Font.BOLD, 14));
+        loginBtn.setPreferredSize(new Dimension(0, 40));
+        loginBtn.setCursor(
+            new Cursor(Cursor.HAND_CURSOR));
+        loginBtn.addActionListener(e -> doLogin());
+
+        // Enter key
+        passwordField.addActionListener(
+            e -> doLogin());
+
+        card.add(loginBtn, BorderLayout.SOUTH);
+        add(card);
+    }
+    private void doLogin() {
+        String username = usernameField.getText().trim();
+        String password = new String(
+            passwordField.getPassword()).trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            errorLabel.setText("아이디와 비밀번호를 입력해주세요");
+            return;
+        }
+
+        UserDAO dao   = new UserDAO();
+        UserModel user = dao.login(username, password);
+
+        if (user == null) {
+            errorLabel.setText(
+                "아이디 또는 비밀번호가 틀렸습니다");
+            passwordField.setText("");
+            return;
+        }
+
+        Session.setUser(user);
+        errorLabel.setText("");
+
+        // Role check
+        if (user.getRole().equals("admin")) {
+            MainFrame.showPanel("ADMIN");
+        } else {
+            MainFrame.showPanel("TABLE"); // ← cashier
+        }
+    }
+   }

@@ -1,0 +1,286 @@
+package ui;
+
+import dao.MenuDAO;
+import table.MenuModel;
+import javax.swing.*;
+import javax.swing.table.*;
+import java.awt.*;
+import java.util.List;
+
+public class MenuManagementPanel extends JPanel {
+
+    private JTable         table;
+    private DefaultTableModel tableModel;
+    private JTextField     nameField;
+    private JTextField     priceField;
+    private JComboBox<String> categoryBox;
+    private JButton        saveBtn;
+    private int            editingId = -1; // edit mode
+
+    public MenuManagementPanel() {
+        setLayout(new BorderLayout(0, 0));
+        setBackground(new Color(245, 245, 250));
+        buildUI();
+    }
+
+    private void buildUI() {
+        // Left — Table list
+        JPanel leftPanel = new JPanel(new BorderLayout());
+        leftPanel.setBackground(Color.WHITE);
+        leftPanel.setBorder(BorderFactory.createMatteBorder(
+            0, 0, 0, 1, Color.LIGHT_GRAY));
+        leftPanel.setPreferredSize(new Dimension(520, 0));
+
+        // Table header
+        JPanel listHeader = new JPanel(new BorderLayout());
+        listHeader.setBackground(new Color(26, 26, 46));
+        listHeader.setPreferredSize(new Dimension(0, 45));
+
+        JLabel listTitle = new JLabel("  Menu Items");
+        listTitle.setForeground(Color.WHITE);
+        listTitle.setFont(
+            new Font("SansSerif", Font.BOLD, 13));
+        listHeader.add(listTitle, BorderLayout.WEST);
+        leftPanel.add(listHeader, BorderLayout.NORTH);
+
+        // JTable
+        String[] cols = {"ID","Name","Category","Price"};
+        tableModel = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) {
+                return false; // read only
+            }
+        };
+        table = new JTable(tableModel);
+        table.setRowHeight(36);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        table.getTableHeader().setFont(
+            new Font("SansSerif", Font.BOLD, 12));
+        table.setSelectionMode(
+            ListSelectionModel.SINGLE_SELECTION);
+
+        // Column width
+        table.getColumnModel().getColumn(0)
+            .setPreferredWidth(40);
+        table.getColumnModel().getColumn(1)
+            .setPreferredWidth(200);
+        table.getColumnModel().getColumn(2)
+            .setPreferredWidth(100);
+        table.getColumnModel().getColumn(3)
+            .setPreferredWidth(80);
+
+        // Row click → form ထဲ ဖြည့်
+        table.getSelectionModel()
+            .addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = table.getSelectedRow();
+                if (row >= 0) loadRowToForm(row);
+            }
+        });
+
+        leftPanel.add(new JScrollPane(table),
+            BorderLayout.CENTER);
+
+        // Action buttons under table
+        JPanel actionPanel = new JPanel(
+            new FlowLayout(FlowLayout.LEFT, 8, 8));
+        actionPanel.setBackground(Color.WHITE);
+
+        JButton deleteBtn = new JButton("Delete");
+        deleteBtn.setBackground(new Color(163, 45, 45));
+        deleteBtn.setForeground(Color.WHITE);
+        deleteBtn.setOpaque(true);
+        deleteBtn.setBorderPainted(false);
+        deleteBtn.setFocusPainted(false);
+        deleteBtn.setFont(
+            new Font("SansSerif", Font.BOLD, 12));
+        deleteBtn.addActionListener(e -> deleteSelected());
+
+        JButton clearBtn = new JButton("Clear form");
+        clearBtn.setOpaque(true);
+        clearBtn.setBorderPainted(false);
+        clearBtn.setFocusPainted(false);
+        clearBtn.setFont(
+            new Font("SansSerif", Font.PLAIN, 12));
+        clearBtn.addActionListener(e -> clearForm());
+
+        actionPanel.add(deleteBtn);
+        actionPanel.add(clearBtn);
+        leftPanel.add(actionPanel, BorderLayout.SOUTH);
+
+        // Right — Form
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(
+            new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+        rightPanel.setBackground(new Color(245, 245, 250));
+        rightPanel.setBorder(
+            BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JLabel formTitle = new JLabel("Add / Edit Menu");
+        formTitle.setFont(
+            new Font("SansSerif", Font.BOLD, 14));
+        formTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Name field
+        JLabel nameLabel = makeLabel("Menu Name");
+        nameField = new JTextField();
+        nameField.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE, 36));
+        nameField.setFont(
+            new Font("SansSerif", Font.PLAIN, 13));
+
+        // Price field
+        JLabel priceLabel = makeLabel("Price ($)");
+        priceField = new JTextField();
+        priceField.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE, 36));
+        priceField.setFont(
+            new Font("SansSerif", Font.PLAIN, 13));
+
+        // Category
+        JLabel catLabel = makeLabel("Category");
+        categoryBox = new JComboBox<>(
+            new String[]{"Food","Drinks","Dessert"});
+        categoryBox.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE, 36));
+        categoryBox.setFont(
+            new Font("SansSerif", Font.PLAIN, 13));
+
+        // Save button
+        saveBtn = new JButton("Save");
+        saveBtn.setBackground(new Color(83, 74, 183));
+        saveBtn.setForeground(Color.WHITE);
+        saveBtn.setOpaque(true);
+        saveBtn.setBorderPainted(false);
+        saveBtn.setFocusPainted(false);
+        saveBtn.setFont(
+            new Font("SansSerif", Font.BOLD, 13));
+        saveBtn.setMaximumSize(
+            new Dimension(Integer.MAX_VALUE, 40));
+        saveBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        saveBtn.addActionListener(e -> saveMenu());
+
+        rightPanel.add(formTitle);
+        rightPanel.add(Box.createVerticalStrut(16));
+        rightPanel.add(nameLabel);
+        rightPanel.add(Box.createVerticalStrut(4));
+        rightPanel.add(nameField);
+        rightPanel.add(Box.createVerticalStrut(12));
+        rightPanel.add(priceLabel);
+        rightPanel.add(Box.createVerticalStrut(4));
+        rightPanel.add(priceField);
+        rightPanel.add(Box.createVerticalStrut(12));
+        rightPanel.add(catLabel);
+        rightPanel.add(Box.createVerticalStrut(4));
+        rightPanel.add(categoryBox);
+        rightPanel.add(Box.createVerticalStrut(16));
+        rightPanel.add(saveBtn);
+
+        add(leftPanel,  BorderLayout.CENTER);
+        add(rightPanel, BorderLayout.EAST);
+
+        loadMenuList();
+    }
+
+    private JLabel makeLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        lbl.setForeground(Color.GRAY);
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return lbl;
+    }
+
+    // DB ကနေ menu load
+    public void loadMenuList() {
+        tableModel.setRowCount(0);
+        MenuDAO dao = new MenuDAO();
+        List<MenuModel> list = dao.getAllMenus();
+        for (MenuModel m : list) {
+            tableModel.addRow(new Object[]{
+                m.getId(),
+                m.getName(),
+                m.getCategory(),
+                String.format("₩ %,.0f", m.getPrice())
+            });
+        }
+    }
+
+    // Row နှိပ်ရင် form ထဲ ဖြည့်
+    private void loadRowToForm(int row) {
+        editingId = (int) tableModel.getValueAt(row, 0);
+        nameField.setText(
+            (String) tableModel.getValueAt(row, 1));
+        categoryBox.setSelectedItem(
+            tableModel.getValueAt(row, 2));
+        String price = (String) tableModel
+            .getValueAt(row, 3);
+        priceField.setText(price.replace("$", ""));
+        saveBtn.setText("Update");
+    }
+
+    // Save / Update
+    private void saveMenu() {
+        String name  = nameField.getText().trim();
+        String price = priceField.getText().trim();
+        String cat   = (String) categoryBox
+            .getSelectedItem();
+
+        if (name.isEmpty() || price.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "Name နဲ့ Price ထည့်ပါ", "Warning",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        double priceVal;
+        try {
+            priceVal = Double.parseDouble(price);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                "Price မှာ ဂဏန်းသာ ထည့်ပါ", "Warning",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        MenuDAO dao = new MenuDAO();
+        if (editingId == -1) {
+            // Add new
+            dao.addMenu(name, priceVal, cat);
+        } else {
+            // Update
+            dao.updateMenu(editingId, name, priceVal, cat);
+        }
+
+        clearForm();
+        loadMenuList();
+    }
+
+    // Delete
+    private void deleteSelected() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this,
+                "Menu တစ်ခု ရွေးပါ", "Warning",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int id = (int) tableModel.getValueAt(row, 0);
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "ဖျက်မှာ သေချာပြီလား?", "Confirm",
+            JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            MenuDAO dao = new MenuDAO();
+            dao.deleteMenu(id);
+            clearForm();
+            loadMenuList();
+        }
+    }
+
+    private void clearForm() {
+        editingId = -1;
+        nameField.setText("");
+        priceField.setText("");
+        categoryBox.setSelectedIndex(0);
+        saveBtn.setText("Save");
+        table.clearSelection();
+    }
+}
