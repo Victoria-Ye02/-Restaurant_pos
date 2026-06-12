@@ -59,7 +59,6 @@ public class DBConnection {
     }
 
 	public static Connection getConnection() {
-		// TODO Auto-generated method stub
 		return connect();
 	}
 

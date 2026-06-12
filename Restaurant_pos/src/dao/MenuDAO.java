@@ -36,43 +36,38 @@ public class MenuDAO {
         }
         return list;
     }
-    public void addMenu(String name, 
-            double price, String cat) {
-String sql = "INSERT INTO menu_items " +
-        "(name, price, category) " +
-        "VALUES (?, ?, ?)";
-Connection conn = DBConnection.connect();
-try {
-PreparedStatement ps = conn.prepareStatement(sql);
-ps.setString(1, name);
-ps.setDouble(2, price);
-ps.setString(3, cat);
-ps.executeUpdate();
-} catch (SQLException e) {
-e.printStackTrace();
-} finally {
-DBConnection.close();
-}
-}
+    public void addMenu(String name, double price, String cat) {
+        String sql = "INSERT INTO menu_items (name, price, category) VALUES (?, ?, ?)";
+        Connection conn = DBConnection.connect();
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, name);
+            ps.setDouble(2, price);
+            ps.setString(3, cat);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close();
+        }
+    }
 
-public void updateMenu(int id, String name,
-               double price, String cat) {
-String sql = "UPDATE menu_items SET name=?, " +
-        "price=?, category=? WHERE id=?";
-Connection conn = DBConnection.connect();
-try {
-PreparedStatement ps = conn.prepareStatement(sql);
-ps.setString(1, name);
-ps.setDouble(2, price);
-ps.setString(3, cat);
-ps.setInt(4, id);
-ps.executeUpdate();
-} catch (SQLException e) {
-e.printStackTrace();
-} finally {
-DBConnection.close();
-}
-}
+    public void updateMenu(int id, String name, double price, String cat) {
+        String sql = "UPDATE menu_items SET name=?, price=?, category=? WHERE id=?";
+        Connection conn = DBConnection.connect();
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, name);
+            ps.setDouble(2, price);
+            ps.setString(3, cat);
+            ps.setInt(4, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close();
+        }
+    }
 
 public void deleteMenu(int id) {
     Connection conn = DBConnection.connect();

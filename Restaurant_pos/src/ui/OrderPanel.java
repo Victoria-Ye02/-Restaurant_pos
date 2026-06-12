@@ -66,7 +66,7 @@ public class OrderPanel extends JPanel {
 
         // Summary panel (right)
         OrderSummaryPanel summaryPanel =
-        	    new OrderSummaryPanel(orderItems, tableId, orderId);
+        	    new OrderSummaryPanel(orderItems, tableId, tableNum, orderId);
 
         // Menu grid (center)
         MenuGridPanel menuGridPanel =

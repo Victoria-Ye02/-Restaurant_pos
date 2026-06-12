@@ -7,7 +7,7 @@ import java.util.List;
 
 public class OrderSummaryPanel extends JPanel {
 
-	private static final String tableNum = null;
+	private int tableNum;
 	private JPanel itemListPanel;
 	private JLabel totalLabel;
 	private List<OrderItem> orderItems;
@@ -15,10 +15,11 @@ public class OrderSummaryPanel extends JPanel {
 	private int orderId = -1;
 
 	// Constructor
-	public OrderSummaryPanel(List<OrderItem> orderItems, int tableId, int orderId) {
+	public OrderSummaryPanel(List<OrderItem> orderItems, int tableId, int tableNum, int orderId) {
 		this.orderItems = orderItems;
 		this.tableId = tableId;
-		this.orderId = orderId; // ← field ထည့်
+		this.tableNum = tableNum;
+		this.orderId = orderId;
 
 // Existing order ဆိုရင် items load
 		if (orderId != -1) {
@@ -72,7 +73,7 @@ public class OrderSummaryPanel extends JPanel {
 
 		bottomPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
 
-		totalLabel = new JLabel("  Total: $0.00");
+		totalLabel = new JLabel("  Total: ₩ 0");
 
 		totalLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
 
@@ -159,10 +160,6 @@ public class OrderSummaryPanel extends JPanel {
 		}
 
 		add(bottomPanel, BorderLayout.SOUTH);
-
-		bottomPanel.add(btnPanel, BorderLayout.SOUTH);
-
-		add(bottomPanel, BorderLayout.SOUTH);
 	}
 
 	private void showReceipt() {
@@ -175,9 +172,9 @@ public class OrderSummaryPanel extends JPanel {
 		// Receipt text ဆောက်
 		StringBuilder sb = new StringBuilder();
 		sb.append("================================\n");
-		sb.append("      Mango Restaurant\n");
+		sb.append("         만 맛집\n");
 		sb.append("================================\n");
-		sb.append("Table: ").append(tableNum).append("\n");
+		sb.append("Table: T").append(tableNum).append("\n");
 		sb.append("--------------------------------\n");
 
 		for (OrderItem oi : orderItems) {
@@ -203,7 +200,7 @@ public class OrderSummaryPanel extends JPanel {
 		scroll.setPreferredSize(new Dimension(320, 380));
 
 		// Confirm dialog
-		int choice = JOptionPane.showOptionDialog(this, scroll, "Receipt — Table " + tableNum,
+		int choice = JOptionPane.showOptionDialog(this, scroll, "Receipt — Table T" + tableNum,
 				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null,
 				new String[] { "💰 ငွေရှင်းပြီး", "Cancel" }, "💰 ငွေရှင်းပြီး");
 

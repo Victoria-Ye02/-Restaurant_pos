@@ -12,22 +12,18 @@ public class MainFrame extends JFrame {
 	public static TablePanel tablePanel = new TablePanel();
 
 	public MainFrame() {
-		setTitle("Restaurant POS");
+		setTitle("만 맛집 — POS System");
 		setSize(900, 620);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setResizable(false);
 
-		// Panel တွေ ထည့
-		  mainPanel.add(new LoginPanel(), "LOGIN");
+		mainPanel.add(new LoginPanel(), "LOGIN");
 		mainPanel.add(tablePanel, "TABLE");
-		// mainPanel.add(new OrderPanel(), "ORDER"); ← နောက်မှ
-		// mainPanel.add(new ReceiptPanel(), "RECEIPT"); ← နောက်မှ
 		mainPanel.add(orderPanel, "ORDER");
-		   mainPanel.add(adminPanel,       "ADMIN"); 
+		mainPanel.add(adminPanel, "ADMIN");
 		add(mainPanel);
-		 cardLayout.show(mainPanel, "LOGIN");
-		// Table screen ကနေ စမယ်
+		cardLayout.show(mainPanel, "LOGIN");
 
 
 		setVisible(true);

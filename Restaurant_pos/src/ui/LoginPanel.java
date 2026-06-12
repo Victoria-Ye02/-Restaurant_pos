@@ -4,6 +4,7 @@ import dao.UserDAO;
 import table.UserModel;
 import javax.swing.*;
 import java.awt.*;
+import java.net.URL;
 
 public class LoginPanel extends JPanel {
 
@@ -22,7 +23,7 @@ public class LoginPanel extends JPanel {
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createEmptyBorder(
             28, 28, 28, 28));
-        card.setPreferredSize(new Dimension(320, 380));
+        card.setPreferredSize(new Dimension(340, 420));
 
         // Logo area
         JPanel logoPanel = new JPanel();
@@ -30,25 +31,36 @@ public class LoginPanel extends JPanel {
         logoPanel.setLayout(new BoxLayout(
             logoPanel, BoxLayout.Y_AXIS));
 
-        JLabel icon = new JLabel("🍽", SwingConstants.CENTER);
-        icon.setFont(new Font("SansSerif", Font.PLAIN, 36));
-        icon.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Logo image
+        URL imgUrl = getClass().getResource("/images/logo.png");
+        if (imgUrl != null) {
+            ImageIcon raw = new ImageIcon(imgUrl);
+            Image scaled = raw.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+            JLabel logoImg = new JLabel(new ImageIcon(scaled));
+            logoImg.setAlignmentX(Component.CENTER_ALIGNMENT);
+            logoPanel.add(logoImg);
+            logoPanel.add(Box.createVerticalStrut(4));
+        } else {
+            JLabel icon = new JLabel("🍽", SwingConstants.CENTER);
+            icon.setFont(new Font("SansSerif", Font.PLAIN, 36));
+            icon.setAlignmentX(Component.CENTER_ALIGNMENT);
+            logoPanel.add(icon);
+            logoPanel.add(Box.createVerticalStrut(6));
+        }
 
         JLabel title = new JLabel(
-            "Mango Restaurant", SwingConstants.CENTER);
+            "만 맛집", SwingConstants.CENTER);
         title.setFont(
-            new Font("SansSerif", Font.BOLD, 16));
+            new Font("SansSerif", Font.BOLD, 20));
         title.setForeground(new Color(26, 26, 46));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel sub = new JLabel(
-            "Point of Sale System", SwingConstants.CENTER);
-        sub.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            "미얀마 + 맛집 | Point of Sale", SwingConstants.CENTER);
+        sub.setFont(new Font("SansSerif", Font.PLAIN, 11));
         sub.setForeground(Color.GRAY);
         sub.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        logoPanel.add(icon);
-        logoPanel.add(Box.createVerticalStrut(6));
         logoPanel.add(title);
         logoPanel.add(Box.createVerticalStrut(3));
         logoPanel.add(sub);
