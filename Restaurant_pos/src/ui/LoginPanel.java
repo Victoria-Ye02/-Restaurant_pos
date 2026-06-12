@@ -49,7 +49,7 @@ public class LoginPanel extends JPanel {
         }
 
         JLabel title = new JLabel(
-            "만 맛집", SwingConstants.CENTER);
+            "먄맛집", SwingConstants.CENTER);
         title.setFont(
             new Font("SansSerif", Font.BOLD, 20));
         title.setForeground(new Color(26, 26, 46));

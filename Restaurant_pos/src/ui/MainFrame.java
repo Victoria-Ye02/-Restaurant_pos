@@ -12,7 +12,7 @@ public class MainFrame extends JFrame {
 	public static TablePanel tablePanel = new TablePanel();
 
 	public MainFrame() {
-		setTitle("만 맛집 — POS System");
+		setTitle("먄맛집 — POS System");
 		setSize(900, 620);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);

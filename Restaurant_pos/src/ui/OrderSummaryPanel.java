@@ -172,7 +172,7 @@ public class OrderSummaryPanel extends JPanel {
 		// Receipt text ဆောက်
 		StringBuilder sb = new StringBuilder();
 		sb.append("================================\n");
-		sb.append("         만 맛집\n");
+		sb.append("         먄맛집\n");
 		sb.append("================================\n");
 		sb.append("Table: T").append(tableNum).append("\n");
 		sb.append("--------------------------------\n");
