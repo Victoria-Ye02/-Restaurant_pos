@@ -19,11 +19,11 @@ public class LoginPanel extends JPanel {
     }
 
     private void buildUI() {
-        JPanel card = new JPanel(new BorderLayout(0, 12));
+        JPanel card = new JPanel(new BorderLayout(0, 16));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createEmptyBorder(
-            28, 28, 28, 28));
-        card.setPreferredSize(new Dimension(340, 420));
+            30, 40, 30, 40));
+        card.setPreferredSize(new Dimension(440, 520));
 
         // Logo area
         JPanel logoPanel = new JPanel();
@@ -68,39 +68,38 @@ public class LoginPanel extends JPanel {
         card.add(logoPanel, BorderLayout.NORTH);
 
         // Form
-        JPanel form = new JPanel(new GridLayout(
-            5, 1, 0, 8));
+        JPanel form = new JPanel(new GridLayout(5, 1, 0, 10));
         form.setOpaque(false);
 
         // Username
         JLabel uLabel = new JLabel("Username");
-        uLabel.setFont(
-            new Font("SansSerif", Font.PLAIN, 12));
-        uLabel.setForeground(Color.GRAY);
+        uLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        uLabel.setForeground(new Color(60, 60, 60));
 
         usernameField = new JTextField();
-        usernameField.setFont(
-            new Font("SansSerif", Font.PLAIN, 13));
-        usernameField.setPreferredSize(
-            new Dimension(0, 36));
+        usernameField.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        usernameField.setPreferredSize(new Dimension(0, 44));
+        usernameField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200)),
+            BorderFactory.createEmptyBorder(4, 10, 4, 10)));
 
         // Password
         JLabel pLabel = new JLabel("Password");
-        pLabel.setFont(
-            new Font("SansSerif", Font.PLAIN, 12));
-        pLabel.setForeground(Color.GRAY);
+        pLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        pLabel.setForeground(new Color(60, 60, 60));
 
         passwordField = new JPasswordField();
-        passwordField.setFont(
-            new Font("SansSerif", Font.PLAIN, 13));
+        passwordField.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        passwordField.setPreferredSize(new Dimension(0, 44));
+        passwordField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200)),
+            BorderFactory.createEmptyBorder(4, 10, 4, 10)));
 
         // Error label
         errorLabel = new JLabel("");
-        errorLabel.setFont(
-            new Font("SansSerif", Font.PLAIN, 11));
+        errorLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
         errorLabel.setForeground(new Color(163, 45, 45));
-        errorLabel.setHorizontalAlignment(
-            SwingConstants.CENTER);
+        errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         form.add(uLabel);
         form.add(usernameField);
@@ -119,7 +118,7 @@ public class LoginPanel extends JPanel {
         loginBtn.setFocusPainted(false);
         loginBtn.setFont(
             new Font("SansSerif", Font.BOLD, 14));
-        loginBtn.setPreferredSize(new Dimension(0, 40));
+        loginBtn.setPreferredSize(new Dimension(0, 50));
         loginBtn.setCursor(
             new Cursor(Cursor.HAND_CURSOR));
         loginBtn.addActionListener(e -> doLogin());
