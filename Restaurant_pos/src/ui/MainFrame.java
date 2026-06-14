@@ -13,7 +13,7 @@ public class MainFrame extends JFrame {
 
 	public MainFrame() {
 		setTitle("먄맛집 — POS System");
-		setSize(900, 620);
+		setSize(1100, 750);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setResizable(false);

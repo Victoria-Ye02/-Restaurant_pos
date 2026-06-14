@@ -21,7 +21,7 @@ public class TablePanel extends JPanel {
         topBar.setBackground(new Color(26, 26, 46));
         topBar.setPreferredSize(new Dimension(0, 55));
 
-        JLabel title = new JLabel("  Mango Restaurant — Tables");
+        JLabel title = new JLabel("  먄맛집 — Tables");
         title.setForeground(Color.WHITE);
         title.setFont(new Font("SansSerif", Font.BOLD, 16));
         topBar.add(title, BorderLayout.WEST);
