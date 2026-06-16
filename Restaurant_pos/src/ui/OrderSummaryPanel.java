@@ -371,12 +371,6 @@ public class OrderSummaryPanel extends JPanel {
 			return;
 		}
 
-		int confirm = JOptionPane.showConfirmDialog(this, "주문을 제출하시겠습니까?", "Confirm",
-				JOptionPane.YES_NO_OPTION);
-
-		if (confirm != JOptionPane.YES_OPTION)
-			return;
-
 		OrderDAO dao = new OrderDAO();
 
 		boolean ok = dao.submitOrder(tableId, orderItems);
