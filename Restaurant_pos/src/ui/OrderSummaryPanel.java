@@ -163,55 +163,13 @@ public class OrderSummaryPanel extends JPanel {
 	}
 
 	private void showReceipt() {
+		// Receipt dialog ပြမယ်
 		OrderDAO dao = new OrderDAO();
 		double subtotal = dao.getOrderTotal(orderId);
 		double tax = subtotal * 0.07;
 		double total = subtotal + tax;
 
-		// ── Step 1: 결제 방법 선택 (현금 / 카드) ──
-		String[] payMethods = { "💵 현금 (Cash)", "💳 카드 (Card)" };
-		int methodChoice = JOptionPane.showOptionDialog(
-			this,
-			"결제 방법을 선택하세요\nTotal: ₩ " + String.format("%,.0f", total),
-			"결제 방법 — Table T" + tableNum,
-			JOptionPane.DEFAULT_OPTION,
-			JOptionPane.QUESTION_MESSAGE,
-			null,
-			payMethods,
-			payMethods[0]
-		);
-
-		if (methodChoice == JOptionPane.CLOSED_OPTION) return;
-
-		boolean isCash = (methodChoice == 0);
-		double change = 0;
-
-		// ── Step 2: 현금이면 받은 금액 입력 ──
-		if (isCash) {
-			while (true) {
-				String input = JOptionPane.showInputDialog(
-					this,
-					String.format("총 금액: ₩ %,.0f\n받은 금액을 입력하세요 (₩):", total),
-					"현금 결제 — Table T" + tableNum
-				);
-				if (input == null) return; // Cancel 누르면 취소
-				try {
-					double received = Double.parseDouble(input.replace(",", "").trim());
-					if (received < total) {
-						JOptionPane.showMessageDialog(this,
-							String.format("금액이 부족합니다!\n총 금액: ₩ %,.0f\n받은 금액: ₩ %,.0f", total, received),
-							"Error", JOptionPane.ERROR_MESSAGE);
-					} else {
-						change = received - total;
-						break;
-					}
-				} catch (NumberFormatException ex) {
-					JOptionPane.showMessageDialog(this, "숫자만 입력하세요!", "Error", JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		}
-
-		// ── Step 3: Receipt 출력 ──
+		// Receipt text ဆောက်
 		StringBuilder sb = new StringBuilder();
 		sb.append("================================\n");
 		sb.append("         먄맛집\n");
@@ -220,48 +178,37 @@ public class OrderSummaryPanel extends JPanel {
 		sb.append("--------------------------------\n");
 
 		for (OrderItem oi : orderItems) {
-			sb.append(String.format("%-15s %2dx ₩ %,.0f\n",
-				oi.getMenu().getName(), oi.getQty(), oi.getMenu().getPrice()));
+			sb.append(
+					String.format("%-15s %2dx ₩ %,.0f\n", oi.getMenu().getName(), oi.getQty(), oi.getMenu().getPrice()));
 		}
 
 		sb.append("--------------------------------\n");
 		sb.append(String.format("Subtotal:      ₩ %,.0f\n", subtotal));
 		sb.append(String.format("Tax (7%%):      ₩ %,.0f\n", tax));
 		sb.append(String.format("Total:         ₩ %,.0f\n", total));
-		sb.append(String.format("결제 방법:      %s\n", isCash ? "현금" : "카드"));
-		if (isCash) {
-			sb.append(String.format("거스름돈:      ₩ %,.0f\n", change));
-		}
 		sb.append("================================\n");
-		sb.append(" 이용해 주셔서 감사합니다!\n");
+		sb.append(" 이용해 주셔서 감사합니다\n");
 		sb.append("================================\n");
 
+		// Receipt panel ဆောက်
 		JTextArea receipt = new JTextArea(sb.toString());
 		receipt.setFont(new Font("Monospaced", Font.PLAIN, 13));
 		receipt.setEditable(false);
 		receipt.setBackground(new Color(255, 255, 250));
 
 		JScrollPane scroll = new JScrollPane(receipt);
-		scroll.setPreferredSize(new Dimension(320, 400));
+		scroll.setPreferredSize(new Dimension(320, 380));
 
-		// ── Step 4: 최종 확인 ──
-		String confirmMsg = isCash
-			? String.format("거스름돈: ₩ %,.0f  —  결제 완료하시겠습니까?", change)
-			: "카드 결제 완료하시겠습니까?";
+		// Confirm dialog
+		int choice = JOptionPane.showOptionDialog(this, scroll, "Receipt — Table T" + tableNum,
+				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null,
+				new String[] { "💰 ငွေရှင်းပြီး", "Cancel" }, "💰 ငွေရှင်းပြီး");
 
-		int confirm = JOptionPane.showOptionDialog(
-			this, scroll, confirmMsg,
-			JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null,
-			new String[] { "✅ 결제 완료", "Cancel" }, "✅ 결제 완료"
-		);
-
-		if (confirm == 0) {
+		if (choice == 0) {
+			// DB update
 			boolean ok = dao.payOrder(orderId, tableId);
 			if (ok) {
-				String successMsg = isCash
-					? String.format("결제 완료 ✔\n거스름돈: ₩ %,.0f", change)
-					: "카드 결제 완료 ✔";
-				JOptionPane.showMessageDialog(this, successMsg, "Success", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(this, "ငွေရှင်းပြီးပြီ ✔", "Success", JOptionPane.INFORMATION_MESSAGE);
 				orderItems.clear();
 				refresh();
 				MainFrame.tablePanel.loadTables();
