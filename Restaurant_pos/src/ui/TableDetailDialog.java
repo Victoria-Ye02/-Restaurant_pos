@@ -162,31 +162,10 @@ public class TableDetailDialog extends JDialog {
         payBtn.setFont(new Font("SansSerif", Font.BOLD, 12));
         payBtn.setPreferredSize(new Dimension(0, 38));
         payBtn.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "결제하시겠습니까?\\n합계: " +
-                		String.format("₩ %,.0f", total),
-                "Payment Confirm",
-                JOptionPane.YES_NO_OPTION);
-
-            if (confirm != JOptionPane.YES_OPTION) return;
-
-            OrderDAO payDao = new OrderDAO();
-            boolean ok = payDao.payOrder(orderId, tableId);
-
-            if (ok) {
-                JOptionPane.showMessageDialog(this,
-                    "결제가 완료되었습니다! ✔",
-                    "Success",
-                    JOptionPane.INFORMATION_MESSAGE);
-                dispose();
-                tablePanel.loadTables(); // table refresh
-            } else {
-                JOptionPane.showMessageDialog(this,
-                    "Error — ထပ်ကြိုးစားပါ",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            }
+            PaymentDialog pd = new PaymentDialog(
+                (JFrame) SwingUtilities.getWindowAncestor(this),
+                orderId, tableId, tableNum, total, tablePanel);
+            if (pd.isPaid()) dispose();
         });
 
         btnPanel.add(addOrderBtn);

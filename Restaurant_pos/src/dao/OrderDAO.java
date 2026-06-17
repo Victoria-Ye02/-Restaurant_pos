@@ -142,17 +142,18 @@ public class OrderDAO {
 	}
 
 	// payment လုပ်မယ် — status paid + table available
-	public boolean payOrder(int orderId, int tableId) {
+	public boolean payOrder(int orderId, int tableId, String paymentType) {
 		Connection conn = DBConnection.connect();
 		try {
 			conn.setAutoCommit(false);
 
-			String paySQL = "UPDATE orders SET status='paid' " + "WHERE id=?";
+			String paySQL = "UPDATE orders SET status='paid', payment_type=? WHERE id=?";
 			PreparedStatement ps1 = conn.prepareStatement(paySQL);
-			ps1.setInt(1, orderId);
+			ps1.setString(1, paymentType);
+			ps1.setInt(2, orderId);
 			ps1.executeUpdate();
 
-			String tblSQL = "UPDATE tables SET status='available' " + "WHERE id=?";
+			String tblSQL = "UPDATE tables SET status='available' WHERE id=?";
 			PreparedStatement ps2 = conn.prepareStatement(tblSQL);
 			ps2.setInt(1, tableId);
 			ps2.executeUpdate();

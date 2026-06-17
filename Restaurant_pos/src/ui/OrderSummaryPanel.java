@@ -206,7 +206,7 @@ public class OrderSummaryPanel extends JPanel {
 
 		if (choice == 0) {
 			// DB update
-			boolean ok = dao.payOrder(orderId, tableId);
+			boolean ok = dao.payOrder(orderId, tableId, "cash");
 			if (ok) {
 				JOptionPane.showMessageDialog(this, "ငွေရှင်းပြီးပြီ ✔", "Success", JOptionPane.INFORMATION_MESSAGE);
 				orderItems.clear();
